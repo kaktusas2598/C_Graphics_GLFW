@@ -32,6 +32,13 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     cameraProcessMouse(camera, xOffset, -1.0f * yOffset, 1);
 }
 
+// Example application specific
+typedef struct {
+    Transform transform;
+    float rotationSpeed;
+    vec3 color;
+} Cube;
+
 int main() {
     glfwInit();
 
@@ -77,9 +84,24 @@ int main() {
     };
 
     Shader shader = shaderCreateFromFile("shaders/basic.vert", "shaders/basic.frag");
-    Mesh cube = meshCreate(vertices, sizeof(vertices), indices, 36);
-    Transform cubeTransform;
-    transformInit(&cubeTransform);
+    Mesh cubeMesh = meshCreate(vertices, sizeof(vertices), indices, 36);
+
+#define CUBE_COUNT 10
+    Cube cubes[CUBE_COUNT];
+    for (int i = 0; i < CUBE_COUNT; i++) {
+        transformInit(&cubes[i].transform);
+
+        cubes[i].transform.position[0] = (float)(i - CUBE_COUNT / 2);
+        cubes[i].transform.position[1] = 0.0f;
+        cubes[i].transform.position[2] = -3.0f;
+
+        cubes[i].rotationSpeed = 0.5f + (float)i * 0.1f;
+
+        cubes[i].color[0] = (float)(i % 3) / 3.0f;
+        cubes[i].color[1] = (float)((i + 1) % 3) / 3.0f;
+        cubes[i].color[2] = (float)((i + 2) % 3) / 3.0f;
+    }
+
     Camera camera;
     cameraInit(&camera, (vec3){2.0f, 2.0f, 2.0f});
     float lastFrameTime = 0.0f;
@@ -105,10 +127,9 @@ int main() {
 
         cameraProcessKeyboard(&camera, forward, backward, left, right, deltaTime);
 
-        cubeTransform.rotation[1] = (float)glfwGetTime();
-
-        mat4 model;
-        transformGetMatrix(&cubeTransform, model);
+        for (int i = 0; i < CUBE_COUNT; i++) {
+            cubes[i].transform.rotation[1] = currentFrameTime * cubes[i].rotationSpeed;
+        }
 
         mat4 view;
         cameraGetViewMatrix(&camera, view);
@@ -134,17 +155,28 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderUse(&shader);
-        shaderSetMat4(&shader, "uModel", model);
+        shaderSetFloat(&shader, "uTime", currentFrameTime);
         shaderSetMat4(&shader, "uView", view);
         shaderSetMat4(&shader, "uProjection", projection);
-        meshDraw(&cube);
+
+        for (int i = 0; i < CUBE_COUNT; i++) {
+
+            mat4 model;
+            transformGetMatrix(&cubes[i].transform, model);
+
+            shaderSetMat4(&shader, "uModel", model);
+            shaderSetVec3(&shader, "uColor", cubes[i].color);
+
+            meshDraw(&cubeMesh);
+        }
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
     shaderDestroy(&shader);
-    meshDestroy(&cube);
+    meshDestroy(&cubeMesh);
 
     glfwTerminate();
     return 0;

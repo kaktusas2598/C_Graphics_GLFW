@@ -103,3 +103,13 @@ void shaderSetMat4(Shader* shader, const char* name, mat4 value) {
     int location = glGetUniformLocation(shader->id, name);
     glUniformMatrix4fv(location, 1, GL_FALSE, (float*)value);
 }
+
+void shaderSetVec3(Shader* shader, const char* name, vec3 value) {
+    int loc = glGetUniformLocation(shader->id, name);
+    glUniform3fv(loc, 1, value);
+}
+
+void shaderSetFloat(Shader* shader, const char* name, float value) {
+    int loc = glGetUniformLocation(shader->id, name);
+    glUniform1f(loc, value);
+}
