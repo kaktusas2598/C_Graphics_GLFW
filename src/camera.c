@@ -4,7 +4,12 @@
 #include <math.h>
 
 void cameraInit(Camera* camera, vec3 position) {
-    glm_vec3_copy(position, camera->position);
+    // Setup camera transform
+    glm_vec3_copy(position, camera->transform.position);
+    glm_vec3_zero(camera->transform.rotation);
+    camera->transform.scale[0] = 1.0f;
+    camera->transform.scale[1] = 1.0f;
+    camera->transform.scale[2] = 1.0f;
 
     camera->yaw = -90.0f;
     camera->pitch = 0.0f;
@@ -61,28 +66,28 @@ void cameraProcessKeyboard(Camera* camera, int forward, int backward,
 
     if (forward) {
         glm_vec3_scale(camera->front, velocity, temp);
-        glm_vec3_add(camera->position, temp, camera->position);
+        glm_vec3_add(camera->transform.position, temp, camera->transform.position);
     }
 
     if (backward) {
         glm_vec3_scale(camera->front, velocity, temp);
-        glm_vec3_sub(camera->position, temp, camera->position);
+        glm_vec3_sub(camera->transform.position, temp, camera->transform.position);
     }
 
     if (left) {
         glm_vec3_scale(camera->right, velocity, temp);
-        glm_vec3_sub(camera->position, temp, camera->position);
+        glm_vec3_sub(camera->transform.position, temp, camera->transform.position);
     }
 
     if (right) {
         glm_vec3_scale(camera->right, velocity, temp);
-        glm_vec3_add(camera->position, temp, camera->position);
+        glm_vec3_add(camera->transform.position, temp, camera->transform.position);
     }
 }
 
 void cameraGetViewMatrix(Camera* camera, mat4 dest) {
     vec3 center;
 
-    glm_vec3_add(camera->position, camera->front, center);
-    glm_lookat(camera->position, center, camera->up, dest);
+    glm_vec3_add(camera->transform.position, camera->front, center);
+    glm_lookat(camera->transform.position, center, camera->up, dest);
 }

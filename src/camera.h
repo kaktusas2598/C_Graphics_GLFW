@@ -1,9 +1,11 @@
 #pragma once
 
 #include <cglm/cglm.h>
+#include "transform.h"
 
 typedef struct {
-    vec3 position;
+    // Transform stores world position so camera behaves like any other scene object
+    Transform transform;
 
     float yaw;
     float pitch;
