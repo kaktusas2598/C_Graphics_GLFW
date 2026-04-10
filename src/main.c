@@ -6,22 +6,7 @@
 
 #include "shader.h"
 #include "mesh.h"
-
-static const char* vertexShaderSrc =
-"#version 430 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"    gl_Position = vec4(aPos, 1.0);\n"
-"}\n";
-
-static const char* fragmentShaderSrc =
-"#version 430 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"    FragColor = vec4(0.2, 0.7, 1.0, 1.0);\n"
-"}\n";
+#include "utils.h"
 
 int main() {
     glfwInit();
@@ -65,7 +50,7 @@ int main() {
         1,2,6, 6,5,1  // right
     };
 
-    Shader shader = shaderCreate(vertexShaderSrc, fragmentShaderSrc);
+    Shader shader = shaderCreateFromFile("shaders/basic.vert", "shaders/basic.frag");
     Mesh cube = meshCreate(vertices, sizeof(vertices), indices, 36);
 
     // -----------------------
@@ -75,6 +60,20 @@ int main() {
         // Quit on Q
         if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, 1);
+
+        long vTime = getFileLastWriteTime(shader.vertexPath);
+        long fTime = getFileLastWriteTime(shader.fragmentPath);
+
+        // Hot Reloading - Check if shaders have to be reloaded
+        if (vTime != shader.lastVertexWriteTime ||
+            fTime != shader.lastFragmentWriteTime) {
+
+            shader = shaderReload(shader);
+
+            shader.lastVertexWriteTime = vTime;
+            shader.lastFragmentWriteTime = fTime;
+        }
+
 
         glClearColor(0.05f, 0.05f, 0.08f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

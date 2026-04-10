@@ -2,6 +2,9 @@
 
 #include <glad/glad.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+#include "utils.h"
 
 static unsigned int compileShader(unsigned int type, const char* src) {
     unsigned int shader = glCreateShader(type);
@@ -44,6 +47,48 @@ Shader shaderCreate(const char* vertexSrc, const char* fragmentSrc) {
     glDeleteShader(fs);
 
     return shader;
+}
+
+Shader shaderCreateFromFile(const char* vertexPath, const char* fragmentPath) {
+    char* vertexShaderSrc = loadFileToString(vertexPath);
+    char* fragmentShaderSrc = loadFileToString(fragmentPath);
+
+    if (!vertexShaderSrc || !fragmentShaderSrc) {
+        printf("Failed to load shader files!\n");
+        return (Shader){0};
+    }
+
+    Shader shader = shaderCreate(vertexShaderSrc, fragmentShaderSrc);
+
+    shader.vertexPath = vertexPath;
+    shader.fragmentPath = fragmentPath;
+
+    shader.lastVertexWriteTime = getFileLastWriteTime(shader.vertexPath);
+    shader.lastFragmentWriteTime = getFileLastWriteTime(shader.fragmentPath);
+
+    return shader;
+}
+
+Shader shaderReload(Shader shader) {
+    char* vertexSrc = loadFileToString(shader.vertexPath);
+    char* fragmentSrc = loadFileToString(shader.fragmentPath);
+
+    if (!vertexSrc || !fragmentSrc)
+        return shader;
+
+    unsigned int oldId = shader.id;
+
+    Shader newShader = shaderCreate(vertexSrc, fragmentSrc);
+
+    free(vertexSrc);
+    free(fragmentSrc);
+
+    glDeleteProgram(oldId);
+
+    newShader.vertexPath = shader.vertexPath;
+    newShader.fragmentPath = shader.fragmentPath;
+
+    return newShader;
 }
 
 void shaderUse(Shader* shader) {
