@@ -7,6 +7,7 @@
 #include "camera.h"
 #include "shader.h"
 #include "mesh.h"
+#include "transform.h"
 #include "utils.h"
 
 static float lastX = 400.0f;
@@ -77,6 +78,8 @@ int main() {
 
     Shader shader = shaderCreateFromFile("shaders/basic.vert", "shaders/basic.frag");
     Mesh cube = meshCreate(vertices, sizeof(vertices), indices, 36);
+    Transform cubeTransform;
+    transformInit(&cubeTransform);
     Camera camera;
     cameraInit(&camera, (vec3){2.0f, 2.0f, 2.0f});
     float lastFrameTime = 0.0f;
@@ -102,9 +105,10 @@ int main() {
 
         cameraProcessKeyboard(&camera, forward, backward, left, right, deltaTime);
 
+        cubeTransform.rotation[1] = (float)glfwGetTime();
+
         mat4 model;
-        glm_mat4_identity(model);
-        glm_rotate(model, (float)glfwGetTime(), (vec3){0.0f, 1.0f, 0.0f});
+        transformGetMatrix(&cubeTransform, model);
 
         mat4 view;
         cameraGetViewMatrix(&camera, view);
