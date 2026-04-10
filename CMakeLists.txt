@@ -39,6 +39,7 @@ if (MINGW)
         glfw3
         opengl32
     )
+# UBUNTU tested
 else()
     target_link_libraries(app
         glfw
