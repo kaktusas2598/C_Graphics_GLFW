@@ -39,5 +39,10 @@ if (MINGW)
         glfw3
         opengl32
     )
+else()
+    target_link_libraries(app
+        glfw
+    )
+
 endif()
 
