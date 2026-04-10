@@ -98,3 +98,8 @@ void shaderUse(Shader* shader) {
 void shaderDestroy(Shader* shader) {
     glDeleteProgram(shader->id);
 }
+
+void shaderSetMat4(Shader* shader, const char* name, mat4 value) {
+    int location = glGetUniformLocation(shader->id, name);
+    glUniformMatrix4fv(location, 1, GL_FALSE, (float*)value);
+}

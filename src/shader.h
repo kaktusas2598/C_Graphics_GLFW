@@ -1,6 +1,8 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include <cglm/cglm.h>
+
 typedef struct {
     unsigned int id;
 
@@ -17,5 +19,6 @@ Shader shaderCreateFromFile(const char* vertexPath, const char* fragmentPath);
 Shader shaderReload(Shader shader);
 void shaderUse(Shader* shader);
 void shaderDestroy(Shader* shader);
+void shaderSetMat4(Shader* shader, const char* name, mat4 value);
 
 #endif
