@@ -29,6 +29,16 @@ target_sources(app PRIVATE
     vendor/glad/src/glad.c
 )
 
+include(FetchContent)
+
+FetchContent_Declare(
+    cglm
+    GIT_REPOSITORY https://github.com/recp/cglm.git
+    GIT_TAG v0.9.4
+)
+
+FetchContent_MakeAvailable(cglm)
+
 # ----------------------------
 # Platform-specific linking
 # ----------------------------
@@ -38,11 +48,13 @@ if (MINGW)
     target_link_libraries(app
         glfw3
         opengl32
+        cglm
     )
 # UBUNTU tested
 else()
     target_link_libraries(app
         glfw
+        cglm
     )
 
 endif()
