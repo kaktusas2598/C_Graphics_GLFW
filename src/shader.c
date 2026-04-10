@@ -1,0 +1,55 @@
+#include "shader.h"
+
+#include <glad/glad.h>
+#include <stdio.h>
+
+static unsigned int compileShader(unsigned int type, const char* src) {
+    unsigned int shader = glCreateShader(type);
+    glShaderSource(shader, 1, &src, NULL);
+    glCompileShader(shader);
+
+    int success;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+
+    if (!success) {
+        char log[512];
+        glGetShaderInfoLog(shader, 512, NULL, log);
+        printf("Shader compile error:\n%s\n", log);
+    }
+
+    return shader;
+}
+
+Shader shaderCreate(const char* vertexSrc, const char* fragmentSrc) {
+    Shader shader;
+
+    unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexSrc);
+    unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentSrc);
+
+    shader.id = glCreateProgram();
+    glAttachShader(shader.id, vs);
+    glAttachShader(shader.id, fs);
+    glLinkProgram(shader.id);
+
+    int success;
+    glGetProgramiv(shader.id, GL_LINK_STATUS, &success);
+
+    if (!success) {
+        char log[512];
+        glGetProgramInfoLog(shader.id, 512, NULL, log);
+        printf("Program link error:\n%s\n", log);
+    }
+
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    return shader;
+}
+
+void shaderUse(Shader* shader) {
+    glUseProgram(shader->id);
+}
+
+void shaderDestroy(Shader* shader) {
+    glDeleteProgram(shader->id);
+}
