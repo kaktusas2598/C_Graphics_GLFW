@@ -8,12 +8,15 @@
 
 #include "input.h"
 
-void luaEngineInit(LuaEngine* engine, Camera* camera) {
+static Scene* gScene = NULL;
+
+void luaEngineInit(LuaEngine* engine, Camera* camera, Scene* scene) {
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
 
     engine->L = L;
     engine->camera = camera;
+    gScene = scene;
 
     // Store engine pointer in Lua registry
     lua_pushlightuserdata(engine->L, engine);
@@ -47,6 +50,14 @@ void luaEngineInit(LuaEngine* engine, Camera* camera) {
     lua_setfield(L, -2, "setRotation");
 
     lua_setglobal(L, "camera");
+
+
+    lua_newtable(L);
+
+    lua_pushcfunction(L, l_spawnEntity);
+    lua_setfield(L, -2, "entity");
+
+    lua_setglobal(L, "spawn");
 }
 
 void luaEngineDestroy(LuaEngine* engine) {
@@ -164,5 +175,24 @@ static int l_camera_setRotation(lua_State* L) {
     camera->pitch = (float)luaL_checknumber(L, 2);
 
     cameraUpdateVectors(camera);
+    return 0;
+}
+
+static int l_spawnEntity(lua_State* L) {
+    float x = luaL_checknumber(L, 1);
+    float y = luaL_checknumber(L, 2);
+    float z = luaL_checknumber(L, 3);
+
+    float r = luaL_checknumber(L, 4);
+    float g = luaL_checknumber(L, 5);
+    float b = luaL_checknumber(L, 6);
+
+    float speed = luaL_checknumber(L, 7);
+
+    vec3 pos = {x, y, z};
+    vec3 color = {r, g, b};
+
+    sceneSpawnEntity(gScene, pos, color, speed);
+
     return 0;
 }

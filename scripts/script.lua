@@ -18,5 +18,10 @@ function update()
     --print('p: '..p)
     --print('v: '..v)
     local x, y, z = camera.getPosition()
-    print(x,y,z)
+    --print(x,y,z)
+
+    if input.isKeyPressed(70) then -- F
+        print('Firing!')
+        spawn.entity(x,y,z - 5,0.2, 0.7, 0.2, 2.0)
+    end
 end

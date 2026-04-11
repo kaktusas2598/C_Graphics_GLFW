@@ -1,6 +1,7 @@
 #pragma once
 
 #include "camera.h"
+#include "scene.h"
 #include <lua.h>
 
 typedef struct LuaEngine {
@@ -10,7 +11,7 @@ typedef struct LuaEngine {
     Camera* camera;
 } LuaEngine;
 
-void luaEngineInit(LuaEngine* engine, Camera* camera);
+void luaEngineInit(LuaEngine* engine, Camera* camera, Scene* scene);
 void luaEngineDestroy(LuaEngine* engine);
 
 // Safe helper for now to help void global camera usage in LuaEngine
@@ -35,3 +36,5 @@ static int l_camera_getPosition(lua_State* L);
 static int l_camera_setPosition(lua_State* L);
 static int l_camera_addPosition(lua_State* L);
 static int l_camera_setRotation(lua_State* L);
+
+static int l_spawnEntity(lua_State* L);

@@ -3,6 +3,7 @@
 
 #include "camera_controller.h"
 #include "input.h"
+#include "scene.h"
 #include "shader.h"
 #include "mesh.h"
 #include "utils.h"
@@ -70,20 +71,15 @@ int main() {
     Shader shader = shaderCreateFromFile("shaders/basic.vert", "shaders/basic.frag");
     Mesh cubeMesh = meshCreate(vertices, sizeof(vertices), indices, 36);
 
-#define CUBE_COUNT 10
-    Cube cubes[CUBE_COUNT];
-    for (int i = 0; i < CUBE_COUNT; i++) {
-        transformInit(&cubes[i].transform);
+    Scene mainScene;
+    sceneInit(&mainScene);
 
-        cubes[i].transform.position[0] = (float)(i - CUBE_COUNT / 2);
-        cubes[i].transform.position[1] = 0.0f;
-        cubes[i].transform.position[2] = -3.0f;
-
-        cubes[i].rotationSpeed = 0.5f + (float)i * 0.1f;
-
-        cubes[i].color[0] = (float)(i % 3) / 3.0f;
-        cubes[i].color[1] = (float)((i + 1) % 3) / 3.0f;
-        cubes[i].color[2] = (float)((i + 2) % 3) / 3.0f;
+    for (int i = 0; i < 10; i++) {
+        sceneSpawnEntity(&mainScene,
+                         (vec3){(float)(i - 10 / 2), 0.0f, -3.0f}, //position
+                         (vec3){(float)(i % 3) / 3.0f, (float)((i + 1) % 3) / 3.0f, (float)((i + 2) % 3) / 3.0f}, //colour
+                         0.5f + (float)i * 0.1f
+                         );
     }
 
     Camera camera;
@@ -95,7 +91,7 @@ int main() {
     glfwSetCursorPosCallback(demoApplication.window, mouseCallback);
 
     LuaEngine luaEngine;
-    luaEngineInit(&luaEngine, &camera);
+    luaEngineInit(&luaEngine, &camera, &mainScene);
     luaEngineRunString(&luaEngine, "print ('Hello from Lua side!')");
 
     long lastScriptTime = getFileLastWriteTime("scripts/script.lua");
@@ -107,15 +103,12 @@ int main() {
     while (appRunning(&demoApplication)) {
         inputUpdate();
 
-
         // Script hot reloading
         long currentTime = getFileLastWriteTime("scripts/script.lua");
 
         if (currentTime != lastScriptTime) {
             printf("Reloading script...\n");
-
             luaEngineRunFile(&luaEngine, "scripts/script.lua");
-
             lastScriptTime = currentTime;
         }
 
@@ -136,10 +129,6 @@ int main() {
         float deltaTime = demoApplication.deltaTime;
 
         cameraControllerUpdate(&cameraController, &camera, deltaTime, forward, backward, left, right);
-
-        for (int i = 0; i < CUBE_COUNT; i++) {
-            cubes[i].transform.rotation[1] = currentFrameTime * cubes[i].rotationSpeed;
-        }
 
         mat4 view;
         cameraGetViewMatrix(&camera, view);
@@ -165,13 +154,17 @@ int main() {
         shaderSetMat4(&shader, "uView", view);
         shaderSetMat4(&shader, "uProjection", projection);
 
-        for (int i = 0; i < CUBE_COUNT; i++) {
+        for (int i = 0; i < mainScene.count; i++) {
+            Entity* e = &mainScene.entities[i];
+            if (!e->active) continue;
+
+            e->transform.rotation[1] = currentFrameTime * e->rotationSpeed;
 
             mat4 model;
-            transformGetMatrix(&cubes[i].transform, model);
+            transformGetMatrix(&e->transform, model);
 
             shaderSetMat4(&shader, "uModel", model);
-            shaderSetVec3(&shader, "uColor", cubes[i].color);
+            shaderSetVec3(&shader, "uColor", e->color);
 
             meshDraw(&cubeMesh);
         }
