@@ -6,6 +6,7 @@
 #include "shader.h"
 #include "mesh.h"
 #include "utils.h"
+#include "lua_engine.h"
 
 static float lastX = 400.0f;
 static float lastY = 300.0f;
@@ -37,9 +38,14 @@ typedef struct {
 } Cube;
 
 int main() {
+    LuaEngine luaEngine;
+    luaEngineInit(&luaEngine);
+
     App demoApplication;
     appInit(&demoApplication, 800, 600, "Cube Demo");
     inputInit(&demoApplication);
+
+    luaEngineRunString(&luaEngine, "print ('Hello from Lua side!')");
 
     // -----------------------
     // Cube vertices
@@ -92,20 +98,38 @@ int main() {
     glfwSetWindowUserPointer(demoApplication.window, &mouseContext);
     glfwSetCursorPosCallback(demoApplication.window, mouseCallback);
 
+    long lastScriptTime = getFileLastWriteTime("scripts/script.lua");
+    luaEngineRunFile(&luaEngine, "scripts/script.lua");
+
     // -----------------------
     // Main loop
     // -----------------------
     while (appRunning(&demoApplication)) {
         inputUpdate();
 
+
+        // Script hot reloading
+        long currentTime = getFileLastWriteTime("scripts/script.lua");
+
+        if (currentTime != lastScriptTime) {
+            printf("Reloading script...\n");
+
+            luaEngineRunFile(&luaEngine, "scripts/script.lua");
+
+            lastScriptTime = currentTime;
+        }
+
+        //Call update() method in lua script
+        luaEngineRunGlobalFunction(&luaEngine, "update");
+
         if (inputIsKeyPressed(GLFW_KEY_Q)) {
             glfwSetWindowShouldClose(demoApplication.window, 1);
         }
 
-        int forward = inputIsKeyPressed(GLFW_KEY_W);
-        int backward = inputIsKeyPressed(GLFW_KEY_S);
-        int left = inputIsKeyPressed(GLFW_KEY_A);
-        int right = inputIsKeyPressed(GLFW_KEY_D);
+        int forward = inputIsKeyDown(GLFW_KEY_W);
+        int backward = inputIsKeyDown(GLFW_KEY_S);
+        int left = inputIsKeyDown(GLFW_KEY_A);
+        int right = inputIsKeyDown(GLFW_KEY_D);
 
         appBeginFrame(&demoApplication);
         float currentFrameTime = demoApplication.lastTime;
@@ -159,6 +183,7 @@ int main() {
     shaderDestroy(&shader);
     meshDestroy(&cubeMesh);
 
+    luaEngineDestroy(&luaEngine);
     appShutdown(&demoApplication);
     return 0;
 }

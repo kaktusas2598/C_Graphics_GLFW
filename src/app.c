@@ -19,6 +19,7 @@ int appInit(App* app, int width, int height, const char* title) {
     }
 
     glfwMakeContextCurrent(app->window);
+    glfwFocusWindow(app->window);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to init GLAD\n");

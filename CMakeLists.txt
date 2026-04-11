@@ -29,6 +29,12 @@ target_sources(app PRIVATE
     vendor/glad/src/glad.c
 )
 
+# Lua
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LUA REQUIRED lua)
+
+target_include_directories(app PRIVATE ${LUA_INCLUDE_DIRS})
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -49,12 +55,14 @@ if (MINGW)
         glfw3
         opengl32
         cglm
+        ${LUA_LIBRARIES}
     )
 # UBUNTU tested
 else()
     target_link_libraries(app
         glfw
         cglm
+        ${LUA_LIBRARIES}
     )
 
 endif()
