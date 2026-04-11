@@ -3,10 +3,10 @@ if input.isKeyPressed(81) then -- Q
 end
 
 -- Variable reset everytime script is called
-y = 5
+v = 5
 
 -- Persistent variable
-x = x or 0
+p = p or 0
 
 -- Called each frame
 function update()
@@ -14,7 +14,9 @@ function update()
     if input.isKeyDown(83) then print 'S' end
     if input.isKeyDown(65) then print 'A' end
     if input.isKeyDown(68) then print 'D' end
-    x = x + 1
-    print('y: '..y)
-    print('x: '..x)
+    p = p + 1
+    --print('p: '..p)
+    --print('v: '..v)
+    local x, y, z = camera.getPosition()
+    print(x,y,z)
 end

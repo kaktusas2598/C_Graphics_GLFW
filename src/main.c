@@ -38,14 +38,10 @@ typedef struct {
 } Cube;
 
 int main() {
-    LuaEngine luaEngine;
-    luaEngineInit(&luaEngine);
 
     App demoApplication;
     appInit(&demoApplication, 800, 600, "Cube Demo");
     inputInit(&demoApplication);
-
-    luaEngineRunString(&luaEngine, "print ('Hello from Lua side!')");
 
     // -----------------------
     // Cube vertices
@@ -97,6 +93,10 @@ int main() {
     MouseContext mouseContext = {&camera, &cameraController};
     glfwSetWindowUserPointer(demoApplication.window, &mouseContext);
     glfwSetCursorPosCallback(demoApplication.window, mouseCallback);
+
+    LuaEngine luaEngine;
+    luaEngineInit(&luaEngine, &camera);
+    luaEngineRunString(&luaEngine, "print ('Hello from Lua side!')");
 
     long lastScriptTime = getFileLastWriteTime("scripts/script.lua");
     luaEngineRunFile(&luaEngine, "scripts/script.lua");
