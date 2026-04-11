@@ -1,12 +1,10 @@
 #include <cglm/cglm.h>
 #include <stdio.h>
 
-#include "app.h"
-#include "camera.h"
 #include "camera_controller.h"
+#include "input.h"
 #include "shader.h"
 #include "mesh.h"
-#include "transform.h"
 #include "utils.h"
 
 static float lastX = 400.0f;
@@ -41,6 +39,7 @@ typedef struct {
 int main() {
     App demoApplication;
     appInit(&demoApplication, 800, 600, "Cube Demo");
+    inputInit(&demoApplication);
 
     // -----------------------
     // Cube vertices
@@ -97,14 +96,16 @@ int main() {
     // Main loop
     // -----------------------
     while (appRunning(&demoApplication)) {
-        // Quit on Q
-        if (glfwGetKey(demoApplication.window, GLFW_KEY_Q) == GLFW_PRESS)
-            glfwSetWindowShouldClose(demoApplication.window, 1);
+        inputUpdate();
 
-        int forward = glfwGetKey(demoApplication.window, GLFW_KEY_W) == GLFW_PRESS;
-        int backward = glfwGetKey(demoApplication.window, GLFW_KEY_S) == GLFW_PRESS;
-        int left = glfwGetKey(demoApplication.window, GLFW_KEY_A) == GLFW_PRESS;
-        int right = glfwGetKey(demoApplication.window, GLFW_KEY_D) == GLFW_PRESS;
+        if (inputIsKeyPressed(GLFW_KEY_Q)) {
+            glfwSetWindowShouldClose(demoApplication.window, 1);
+        }
+
+        int forward = inputIsKeyPressed(GLFW_KEY_W);
+        int backward = inputIsKeyPressed(GLFW_KEY_S);
+        int left = inputIsKeyPressed(GLFW_KEY_A);
+        int right = inputIsKeyPressed(GLFW_KEY_D);
 
         appBeginFrame(&demoApplication);
         float currentFrameTime = demoApplication.lastTime;
