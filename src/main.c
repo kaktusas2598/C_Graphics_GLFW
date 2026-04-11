@@ -1,10 +1,9 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #include <cglm/cglm.h>
 #include <stdio.h>
 
+#include "app.h"
 #include "camera.h"
+#include "camera_controller.h"
 #include "shader.h"
 #include "mesh.h"
 #include "transform.h"
@@ -15,7 +14,7 @@ static float lastY = 300.0f;
 static int firstMouse = 1;
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-    Camera* camera = (Camera*)glfwGetWindowUserPointer(window);
+    MouseContext* context = (MouseContext*)glfwGetWindowUserPointer(window);
 
     if (firstMouse) {
         lastX = (float)xpos;
@@ -29,7 +28,7 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     lastX = (float)xpos;
     lastY = (float)ypos;
 
-    cameraProcessMouse(camera, xOffset, -1.0f * yOffset, 1);
+    cameraControllerMouse(context->controller, context->camera, xOffset, yOffset, 1);
 }
 
 // Example application specific
@@ -40,24 +39,8 @@ typedef struct {
 } Cube;
 
 int main() {
-    glfwInit();
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Cube", NULL, NULL);
-    if (!window)
-        return -1;
-
-    glfwMakeContextCurrent(window);
-
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-        return -1;
-
-    glEnable(GL_DEPTH_TEST);
+    App demoApplication;
+    appInit(&demoApplication, 800, 600, "Cube Demo");
 
     // -----------------------
     // Cube vertices
@@ -104,28 +87,30 @@ int main() {
 
     Camera camera;
     cameraInit(&camera, (vec3){2.0f, 2.0f, 2.0f});
+    CameraController cameraController = {2.5f, 0.1f};
     float lastFrameTime = 0.0f;
-    glfwSetWindowUserPointer(window, &camera);
-    glfwSetCursorPosCallback(window, mouseCallback);
+    MouseContext mouseContext = {&camera, &cameraController};
+    glfwSetWindowUserPointer(demoApplication.window, &mouseContext);
+    glfwSetCursorPosCallback(demoApplication.window, mouseCallback);
 
     // -----------------------
     // Main loop
     // -----------------------
-    while (!glfwWindowShouldClose(window)) {
+    while (appRunning(&demoApplication)) {
         // Quit on Q
-        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, 1);
+        if (glfwGetKey(demoApplication.window, GLFW_KEY_Q) == GLFW_PRESS)
+            glfwSetWindowShouldClose(demoApplication.window, 1);
 
-        int forward = glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS;
-        int backward = glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS;
-        int left = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
-        int right = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
+        int forward = glfwGetKey(demoApplication.window, GLFW_KEY_W) == GLFW_PRESS;
+        int backward = glfwGetKey(demoApplication.window, GLFW_KEY_S) == GLFW_PRESS;
+        int left = glfwGetKey(demoApplication.window, GLFW_KEY_A) == GLFW_PRESS;
+        int right = glfwGetKey(demoApplication.window, GLFW_KEY_D) == GLFW_PRESS;
 
-        float currentFrameTime = glfwGetTime();
-        float deltaTime = currentFrameTime - lastFrameTime;
-        lastFrameTime = currentFrameTime;
+        appBeginFrame(&demoApplication);
+        float currentFrameTime = demoApplication.lastTime;
+        float deltaTime = demoApplication.deltaTime;
 
-        cameraProcessKeyboard(&camera, forward, backward, left, right, deltaTime);
+        cameraControllerUpdate(&cameraController, &camera, deltaTime, forward, backward, left, right);
 
         for (int i = 0; i < CUBE_COUNT; i++) {
             cubes[i].transform.rotation[1] = currentFrameTime * cubes[i].rotationSpeed;
@@ -150,10 +135,6 @@ int main() {
             shader.lastFragmentWriteTime = fTime;
         }
 
-
-        glClearColor(0.05f, 0.05f, 0.08f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         shaderUse(&shader);
         shaderSetFloat(&shader, "uTime", currentFrameTime);
         shaderSetMat4(&shader, "uView", view);
@@ -171,13 +152,12 @@ int main() {
         }
 
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        appEndFrame(&demoApplication);
     }
 
     shaderDestroy(&shader);
     meshDestroy(&cubeMesh);
 
-    glfwTerminate();
+    appShutdown(&demoApplication);
     return 0;
 }
