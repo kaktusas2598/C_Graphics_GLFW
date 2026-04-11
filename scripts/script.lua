@@ -22,6 +22,13 @@ function update()
 
     if input.isKeyPressed(70) then -- F
         print('Firing!')
-        spawn.entity(x,y,z - 5,0.2, 0.7, 0.2, 2.0)
+        spawn.entity(x,y,z - 5,0.2, 0.7, 0.2, 2.0, "bullet")
+    end
+end
+
+function updateEntity(id, dt)
+    name = entity.getName(id)
+    if name == 'bullet' then
+        entity.addPosition(id, 0.001, 0.0, 0.01 * dt)
     end
 end

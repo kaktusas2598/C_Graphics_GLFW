@@ -38,3 +38,7 @@ static int l_camera_addPosition(lua_State* L);
 static int l_camera_setRotation(lua_State* L);
 
 static int l_spawnEntity(lua_State* L);
+static int l_entity_get_name(lua_State* L);
+static int l_entity_add_position(lua_State* L);
+
+static int luaCallUpdate(lua_State* L, int id, float dt);

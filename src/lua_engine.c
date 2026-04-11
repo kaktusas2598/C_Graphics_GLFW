@@ -52,12 +52,22 @@ void luaEngineInit(LuaEngine* engine, Camera* camera, Scene* scene) {
     lua_setglobal(L, "camera");
 
 
-    lua_newtable(L);
+    lua_newtable(L); // "spawn"
 
     lua_pushcfunction(L, l_spawnEntity);
     lua_setfield(L, -2, "entity");
 
     lua_setglobal(L, "spawn");
+
+    lua_newtable(L); // "entity"
+
+    lua_pushcfunction(L, l_entity_get_name);
+    lua_setfield(L, -2, "getName");
+
+    lua_pushcfunction(L, l_entity_add_position);
+    lua_setfield(L, -2, "addPosition");
+
+    lua_setglobal(L, "entity");
 }
 
 void luaEngineDestroy(LuaEngine* engine) {
@@ -188,11 +198,58 @@ static int l_spawnEntity(lua_State* L) {
     float b = luaL_checknumber(L, 6);
 
     float speed = luaL_checknumber(L, 7);
+    const char* name = luaL_optstring(L, 8, "entity");
 
     vec3 pos = {x, y, z};
     vec3 color = {r, g, b};
 
-    sceneSpawnEntity(gScene, pos, color, speed);
+    int id = sceneSpawnEntity(gScene, pos, color, speed, name);
+    lua_pushinteger(L, id);
 
+    return 1;
+}
+
+static int l_entity_get_name(lua_State* L) {
+    int id = luaL_checkinteger(L, 1);
+
+    Entity* e = sceneGetEntity(gScene, id);
+    if (!e) {
+        lua_pushstring(L, "");
+        return 1;
+    }
+
+    lua_pushstring(L, e->name);
+    return 1;
+}
+
+static int l_entity_add_position(lua_State* L) {
+    int id = luaL_checkinteger(L, 1);
+
+    vec3 delta = {
+        luaL_checknumber(L, 2),
+        luaL_checknumber(L, 3),
+        luaL_checknumber(L, 4)
+    };
+
+    sceneAddPosition(gScene, id, delta);
     return 0;
+}
+
+static int luaCallUpdate(lua_State* L, int id, float dt) {
+    lua_getglobal(L, "updateEntity");
+
+    if (!lua_isfunction(L, -1)) {
+        lua_pop(L, 1);
+        return 0;
+    }
+
+    lua_pushinteger(L, id);
+    lua_pushnumber(L, dt);
+
+    if (lua_pcall(L, 2, 0, 0) != LUA_OK) {
+        printf("Lua error: %s\n", lua_tostring(L, -1));
+        lua_pop(L, 1);
+    }
+
+    return 1;
 }

@@ -78,7 +78,8 @@ int main() {
         sceneSpawnEntity(&mainScene,
                          (vec3){(float)(i - 10 / 2), 0.0f, -3.0f}, //position
                          (vec3){(float)(i % 3) / 3.0f, (float)((i + 1) % 3) / 3.0f, (float)((i + 2) % 3) / 3.0f}, //colour
-                         0.5f + (float)i * 0.1f
+                         0.5f + (float)i * 0.1f,
+                         "Cube"
                          );
     }
 
@@ -114,6 +115,8 @@ int main() {
 
         //Call update() method in lua script
         luaEngineRunGlobalFunction(&luaEngine, "update");
+
+        sceneUpdate(&mainScene, &luaEngine, demoApplication.deltaTime);
 
         if (inputIsKeyPressed(GLFW_KEY_Q)) {
             glfwSetWindowShouldClose(demoApplication.window, 1);
