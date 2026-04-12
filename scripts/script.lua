@@ -8,7 +8,7 @@ v = 5
 -- Persistent variable
 p = p or 0
 
--- Called each frame
+-- Called each frame - global update
 function update()
     if input.isKeyDown(87) then print 'W' end
     if input.isKeyDown(83) then print 'S' end
@@ -26,6 +26,7 @@ function update()
     end
 end
 
+-- Called each frame - entity specific general update
 function updateEntity(id, dt)
     name = entity.getName(id)
     if name == 'bullet' then

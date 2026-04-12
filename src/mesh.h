@@ -11,6 +11,7 @@ typedef struct {
 
 Mesh meshCreate(float* vertices, unsigned int vertexSize,
                 unsigned int* indices, unsigned int indexCount);
+Mesh meshCreateCube();
 
 void meshDraw(Mesh* mesh);
 void meshDestroy(Mesh* mesh);

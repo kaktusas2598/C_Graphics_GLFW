@@ -31,6 +31,31 @@ Mesh meshCreate(float* vertices, unsigned int vertexSize,
     return mesh;
 }
 
+Mesh meshCreateCube() {
+    float vertices[] = {
+        -0.5f,-0.5f,-0.5f,
+         0.5f,-0.5f,-0.5f,
+         0.5f, 0.5f,-0.5f,
+        -0.5f, 0.5f,-0.5f,
+
+        -0.5f,-0.5f, 0.5f,
+         0.5f,-0.5f, 0.5f,
+         0.5f, 0.5f, 0.5f,
+        -0.5f, 0.5f, 0.5f
+    };
+
+    unsigned int indices[] = {
+        0,1,2, 2,3,0, // back
+        4,5,6, 6,7,4, // front
+        0,1,5, 5,4,0, // bottom
+        3,2,6, 6,7,3, // top
+        0,3,7, 7,4,0, // left
+        1,2,6, 6,5,1  // right
+    };
+
+    return meshCreate(vertices, sizeof(vertices), indices, 36);
+}
+
 void meshDraw(Mesh* mesh) {
     glBindVertexArray(mesh->vao);
     glDrawElements(GL_TRIANGLES, mesh->indexCount,

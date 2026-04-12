@@ -44,32 +44,8 @@ int main() {
     appInit(&demoApplication, 800, 600, "Cube Demo");
     inputInit(&demoApplication);
 
-    // -----------------------
-    // Cube vertices
-    // -----------------------
-    float vertices[] = {
-        -0.5f,-0.5f,-0.5f,
-         0.5f,-0.5f,-0.5f,
-         0.5f, 0.5f,-0.5f,
-        -0.5f, 0.5f,-0.5f,
-
-        -0.5f,-0.5f, 0.5f,
-         0.5f,-0.5f, 0.5f,
-         0.5f, 0.5f, 0.5f,
-        -0.5f, 0.5f, 0.5f
-    };
-
-    unsigned int indices[] = {
-        0,1,2, 2,3,0, // back
-        4,5,6, 6,7,4, // front
-        0,1,5, 5,4,0, // bottom
-        3,2,6, 6,7,3, // top
-        0,3,7, 7,4,0, // left
-        1,2,6, 6,5,1  // right
-    };
-
     Shader shader = shaderCreateFromFile("shaders/basic.vert", "shaders/basic.frag");
-    Mesh cubeMesh = meshCreate(vertices, sizeof(vertices), indices, 36);
+    Mesh cubeMesh = meshCreateCube();
 
     Scene mainScene;
     sceneInit(&mainScene);
