@@ -22,5 +22,6 @@ void shaderDestroy(Shader* shader);
 void shaderSetMat4(Shader* shader, const char* name, mat4 value);
 void shaderSetVec3(Shader* shader, const char* name, vec3 value);
 void shaderSetFloat(Shader* shader, const char* name, float value);
+void shaderSetInt(Shader* shader, const char* name, int value);
 
 #endif

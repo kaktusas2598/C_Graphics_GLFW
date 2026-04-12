@@ -8,6 +8,8 @@
 #include "mesh.h"
 #include "utils.h"
 #include "lua_engine.h"
+#include "texture.h"
+#include "material.h"
 
 static float lastX = 400.0f;
 static float lastY = 300.0f;
@@ -45,7 +47,19 @@ int main() {
     inputInit(&demoApplication);
 
     Shader shader = shaderCreateFromFile("shaders/basic.vert", "shaders/basic.frag");
-    Mesh cubeMesh = meshCreateCube();
+
+    //Mesh cubeMesh = meshCreateCube();
+    Mesh cubeMesh = meshCreateTexturedCube();
+    Texture tex = textureCreateFromFile("dirt.png");
+
+    Material simpleUvMat = materialCreate(&shader);
+    materialSetTexture(&simpleUvMat, &tex);
+    materialUse(&simpleUvMat);
+
+    // Or without material:
+    // shaderUse(&shader);
+    // shaderSetInt(&shader, "uTexture", 0);
+    // textureBind(&tex, 0);
 
     Scene mainScene;
     sceneInit(&mainScene);
@@ -63,6 +77,7 @@ int main() {
     cameraInit(&camera, (vec3){2.0f, 2.0f, 2.0f});
     CameraController cameraController = {2.5f, 0.1f};
     float lastFrameTime = 0.0f;
+
     MouseContext mouseContext = {&camera, &cameraController};
     glfwSetWindowUserPointer(demoApplication.window, &mouseContext);
     glfwSetCursorPosCallback(demoApplication.window, mouseCallback);
@@ -128,7 +143,7 @@ int main() {
             shader.lastFragmentWriteTime = fTime;
         }
 
-        shaderUse(&shader);
+        materialUse(&simpleUvMat);
         shaderSetFloat(&shader, "uTime", currentFrameTime);
         shaderSetMat4(&shader, "uView", view);
         shaderSetMat4(&shader, "uProjection", projection);
