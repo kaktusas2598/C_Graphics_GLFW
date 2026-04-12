@@ -16,6 +16,8 @@ void materialSetTexture(Material* mat, Texture* tex) {
 void materialUse(Material* mat) {
     shaderUse(mat->shader);
 
+    shaderSetInt(mat->shader, "uUseTexture", mat->useTexture);
+
     if (mat->useTexture && mat->texture) {
         shaderSetInt(mat->shader, "uTexture", 0);
         textureBind(mat->texture, 0);

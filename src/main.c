@@ -10,6 +10,7 @@
 #include "lua_engine.h"
 #include "texture.h"
 #include "material.h"
+#include "renderer.h"
 
 static float lastX = 400.0f;
 static float lastY = 300.0f;
@@ -124,12 +125,6 @@ int main() {
 
         cameraControllerUpdate(&cameraController, &camera, deltaTime, forward, backward, left, right);
 
-        mat4 view;
-        cameraGetViewMatrix(&camera, view);
-
-        mat4 projection;
-        glm_perspective(glm_rad(45.0f), 800.0f / 600.0f, 0.1f, 100.0f, projection);
-
         long vTime = getFileLastWriteTime(shader.vertexPath);
         long fTime = getFileLastWriteTime(shader.fragmentPath);
 
@@ -143,10 +138,8 @@ int main() {
             shader.lastFragmentWriteTime = fTime;
         }
 
-        materialUse(&simpleUvMat);
-        shaderSetFloat(&shader, "uTime", currentFrameTime);
-        shaderSetMat4(&shader, "uView", view);
-        shaderSetMat4(&shader, "uProjection", projection);
+        Renderer renderer;
+        rendererBegin(&renderer, &camera, currentFrameTime);
 
         for (int i = 0; i < mainScene.count; i++) {
             Entity* e = &mainScene.entities[i];
@@ -157,10 +150,7 @@ int main() {
             mat4 model;
             transformGetMatrix(&e->transform, model);
 
-            shaderSetMat4(&shader, "uModel", model);
-            shaderSetVec3(&shader, "uColor", e->color);
-
-            meshDraw(&cubeMesh);
+            rendererDrawMeshUsingMaterial(&renderer, &simpleUvMat, &cubeMesh, model, e->color);
         }
 
 

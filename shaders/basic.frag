@@ -3,6 +3,7 @@
 in vec2 vUV;
 
 uniform sampler2D uTexture;
+uniform int uUseTexture;
 uniform vec3 uColor;
 uniform float uTime;
 
@@ -13,9 +14,13 @@ void main() {
 
     float pulse = 0.5 + 0.5 * sin(uTime);
     //FragColor = vec4(uColor * pulse, 1.0);
-    //FragColor = vec4(uColor.r, uColor.g, uColor.b * pulse, 1.0);
 
-    vec4 texColor = texture(uTexture, vUV);
-    FragColor = texColor; // * vec4(uColor, 1.0); 
+    if (uUseTexture == 1) {
+        vec4 texColor = texture(uTexture, vUV);
+        FragColor = texColor; // * vec4(uColor, 1.0); 
+    } else {
+        FragColor = vec4(uColor.r, uColor.g, uColor.b * pulse, 1.0);
+    }
+
 
 }
